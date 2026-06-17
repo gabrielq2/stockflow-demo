@@ -115,7 +115,7 @@ function inicializarEventos() {
 async function alterarQtd(id, novaQuantidade) {
   if (novaQuantidade < 0) return;
   try {
-    await window.api.updateQuantidade({ id, novaQuantidade });
+    await window.api.updateQuantidade({ id: parseInt(id), novaQuantidade });
     await carregarTabela();
     inicializarEventos();
   } catch (e) {
