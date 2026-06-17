@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoPeças — Sistema de Gestão</title>
+  <link rel="stylesheet" href="loja.css" />
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🔧</div>
+      <div>
+        <div class="logo-text">AutoPeças</div>
+        <div class="logo-sub">Sistema de Gestão</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Menu</div>
+      <div class="nav-item active" id="nav-vendas" onclick="showPage('vendas')" style="cursor:pointer">
+        <span class="nav-icon">💰</span> Vendas
+      </div>
+      <div class="nav-item" id="nav-estoque" onclick="showPage('estoque')" style="cursor:pointer">
+        <span class="nav-icon">📦</span> Estoque
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="version">v1.0.0</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1 id="topbar-titulo">Vendas</h1>
+        <p id="topbar-subtitulo">Registre e acompanhe suas vendas</p>
+      </div>
+      <div class="topbar-right">
+        <div class="badge-time" id="clock">--:--</div>
+      </div>
+    </header>
+
+    <!-- ══ PÁGINA: VENDAS ══════════════════════════════════════════════════════ -->
+    <div class="page-content" id="page-vendas">
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-info">
+            <div class="stat-label">Vendas Hoje</div>
+            <div class="stat-value" id="venda-hoje">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-info">
+            <div class="stat-label">Últimos 30 Dias</div>
+            <div class="stat-value" id="venda-30-dias">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📈</div>
+          <div class="stat-info">
+            <div class="stat-label">Média Diária (30d)</div>
+            <div class="stat-value" id="media-30-dias">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REGISTRAR VENDA -->
+      <div class="panel registrar-venda">
+        <div class="panel-header">
+          <h2><span class="ph-icon">➕</span> Registrar Venda</h2>
+        </div>
+        <div class="panel-body">
+          <div class="form-grid cols-4">
+            <div class="form-group" style="grid-column: span 2;">
+              <label for="select-peca">Peça / Produto</label>
+              <select id="select-peca">
+                <option value="">— Selecione uma peça —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="input-qtd-venda">Quantidade</label>
+              <input type="number" id="input-qtd-venda" placeholder="0" min="1" />
+            </div>
+            <div class="form-group">
+              <label for="input-nf">Nº da NF <span style="color:var(--text-muted);font-weight:400;">(opcional)</span></label>
+              <input type="text" id="input-nf" placeholder="Ex: 000123" />
+            </div>
+            <button type="button" class="btn btn-primary btn-full" onclick="registrarVenda()">
+              💰 Registrar Venda
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTÓRICO DE VENDAS -->
+      <div class="panel historico-vendas">
+        <div class="panel-header">
+          <h2><span class="ph-icon">🧾</span> Histórico de Vendas</h2>
+        </div>
+        <div class="table-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-vendas" placeholder="Buscar por peça ou NF..."
+              oninput="filtrarVendas(this.value)" />
+          </div>
+          <div class="table-count" id="count-vendas">0 vendas</div>
+        </div>
+        <div class="table-wrap">
+          <table id="tabela-vendas">
+            <thead>
+              <tr>
+                <th>Data / Hora</th>
+                <th>Peça</th>
+                <th>Qtd</th>
+                <th>Valor Unit.</th>
+                <th>Total</th>
+                <th>NF</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-vendas">
+              <tr><td colspan="8">
+                <div class="empty-state"><div class="empty-icon">🧾</div><p>Nenhuma venda registrada ainda.</p></div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page-vendas -->
+
+    <!-- ══ PÁGINA: ESTOQUE ═════════════════════════════════════════════════════ -->
+    <div class="page-content" id="page-estoque" style="display:none">
+
+      <div class="stats-grid" id="stats-estoque">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <div class="stat-label">Total de Peças</div>
+            <div class="stat-value" id="stat-total-pecas">—</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔢</div>
+          <div class="stat-info">
+            <div class="stat-label">Itens em Estoque</div>
+            <div class="stat-value" id="stat-total-itens">—</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💵</div>
+          <div class="stat-info">
+            <div class="stat-label">Valor Total em Estoque</div>
+            <div class="stat-value" id="stat-valor-total">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CADASTRAR PEÇA -->
+      <div class="panel cadastro-peça">
+        <div class="panel-header">
+          <h2><span class="ph-icon">➕</span> Cadastrar Nova Peça</h2>
+        </div>
+        <div class="panel-body">
+          <div class="form-grid cols-3">
+            <div class="form-group" style="grid-column: span 1;">
+              <label for="input-nome">Nome da Peça</label>
+              <input type="text" id="input-nome" placeholder="Ex: Filtro de Óleo" />
+            </div>
+            <div class="form-group">
+              <label for="input-qtd">Quantidade Inicial</label>
+              <input type="number" id="input-qtd" placeholder="0" min="0" />
+            </div>
+            <div class="form-group">
+              <label for="input-valor">Preço Unitário (R$)</label>
+              <input type="number" id="input-valor" placeholder="0,00" step="0.01" min="0" />
+            </div>
+            <div class="form-group span-full">
+              <label>Tags <span style="color:var(--text-muted);font-weight:400">(Enter ou vírgula para adicionar)</span></label>
+              <div class="tag-input-wrap" id="tag-input-wrap" onclick="document.getElementById('tag-input-field').focus()">
+                <div id="tag-chips-new"></div>
+                <input
+                  type="text"
+                  id="tag-input-field"
+                  placeholder="Ex: Motor, Filtros, Elétrico..."
+                  autocomplete="off"
+                  onkeydown="handleTagInput(event)"
+                  oninput="showTagSuggestions(this.value)"
+                  onblur="commitTagInput(this)"
+                />
+              </div>
+              <div class="tag-suggestions" id="tag-suggestions"></div>
+            </div>
+            <button type="button" class="btn btn-primary btn-full" onclick="salvarNovaPeca()">
+              📦 Adicionar ao Estoque
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABELA ESTOQUE -->
+      <div class="panel historico-vendas">
+        <div class="panel-header">
+          <h2><span class="ph-icon">📋</span> Estoque Atual</h2>
+        </div>
+
+        <div class="tag-filter-bar" id="tag-filter-bar" style="display:none">
+          <span class="tag-filter-label">Filtrar por tag:</span>
+          <div class="tag-filter-chips" id="tag-filter-chips"></div>
+          <button type="button" class="btn btn-sm btn-secondary" onclick="limparFiltroTags()" id="btn-limpar-tags" style="display:none">✕ Limpar</button>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-estoque" placeholder="Buscar peça..." oninput="aplicarFiltros()" />
+          </div>
+          <div class="table-count" id="count-estoque">0 itens</div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="tabela-estoque">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Peça</th>
+                <th>Tags</th>
+                <th>Quantidade</th>
+                <th>Preço Unit.</th>
+                <th>Total em Estoque</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-estoque">
+              <tr><td colspan="8">
+                <div class="empty-state"><div class="empty-icon">📦</div><p>Nenhuma peça cadastrada ainda.</p></div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page-estoque -->
+
+  </div><!-- /main -->
+
+  <!-- TOASTS -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="api-bridge-demo.js"></script>
+  <script src="renderer.js"></script>
+  <script>
+    // ── CLOCK ────────────────────────────────────────────────────────────────
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent =
+        now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) +
+        ' · ' + now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+    }
+    updateClock();
+    setInterval(updateClock, 30000);
+
+    // ── TOAST ────────────────────────────────────────────────────────────────
+    window.showToast = function(title, msg, type = 'success') {
+      const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+      const container = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = `toast toast-${type}`;
+      t.innerHTML = `
+        <div class="toast-icon">${icons[type]}</div>
+        <div class="toast-body">
+          <div class="toast-title">${title}</div>
+          ${msg ? `<div class="toast-msg">${msg}</div>` : ''}
+        </div>
+      `;
+      container.appendChild(t);
+      setTimeout(() => {
+        t.style.animation = 'slideOut 0.2s ease forwards';
+        setTimeout(() => t.remove(), 200);
+      }, 3500);
+    };
+
+    // ── NAVEGAÇÃO SPA ─────────────────────────────────────────────────────────
+    const pageTitles = {
+      vendas:  { titulo: 'Vendas',               sub: 'Registre e acompanhe suas vendas' },
+      estoque: { titulo: 'Gerenciador de Estoque', sub: 'Cadastre e controle seus produtos' },
+    };
+
+    window.showPage = function(page) {
+      // Troca seção visível
+      document.getElementById('page-vendas').style.display  = page === 'vendas'  ? '' : 'none';
+      document.getElementById('page-estoque').style.display = page === 'estoque' ? '' : 'none';
+
+      // Atualiza nav
+      document.getElementById('nav-vendas').classList.toggle('active',  page === 'vendas');
+      document.getElementById('nav-estoque').classList.toggle('active', page === 'estoque');
+
+      // Atualiza topbar
+      document.getElementById('topbar-titulo').textContent    = pageTitles[page].titulo;
+      document.getElementById('topbar-subtitulo').textContent = pageTitles[page].sub;
+
+      // Carrega dados da página ativada
+      if (page === 'vendas') {
+        atualizarDashboard();
+      } else if (page === 'estoque') {
+        carregarTabela().then(() => inicializarEventos());
+        carregarTagsConhecidas();
+      }
+    };
+
+    // ── FILTRAR VENDAS ────────────────────────────────────────────────────────
+    window.filtrarVendas = function(query) {
+      const rows = document.querySelectorAll('#tbody-vendas tr');
+      const q = query.toLowerCase();
+      let visible = 0;
+      rows.forEach(row => {
+        const match = row.textContent.toLowerCase().includes(q);
+        row.style.display = match ? '' : 'none';
+        if (match && !row.querySelector('.empty-state')) visible++;
+      });
+      const countEl = document.getElementById('count-vendas');
+      if (countEl) countEl.textContent = visible + ' venda' + (visible !== 1 ? 's' : '');
+    };
+
+    // ── TAG INPUT ─────────────────────────────────────────────────────────────
+    let newPecaTags = [];
+    let allKnownTags = [];
+
+    function tagColor(tag) {
+      const palette = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4','#ef4444','#f97316','#14b8a6','#a855f7'];
+      let h = 0;
+      for (let i = 0; i < tag.length; i++) h = tag.charCodeAt(i) + ((h << 5) - h);
+      return palette[Math.abs(h) % palette.length];
+    }
+    window.tagColor = tagColor;
+
+    function renderTagChip(tag, onRemove) {
+      const color = tagColor(tag);
+      const chip = document.createElement('span');
+      chip.className = 'tag-chip';
+      chip.style.setProperty('--tc', color);
+      chip.innerHTML = `${tag}<button type="button" class="tag-chip-remove" onclick="(${onRemove.toString()})(this.parentElement)">×</button>`;
+      return chip;
+    }
+
+    function refreshNewPecaChips() {
+      const wrap = document.getElementById('tag-chips-new');
+      if (!wrap) return;
+      wrap.innerHTML = '';
+      newPecaTags.forEach(tag => {
+        wrap.appendChild(renderTagChip(tag, (el) => {
+          newPecaTags = newPecaTags.filter(t => t !== el.firstChild.textContent.trim().replace('×','').trim());
+          refreshNewPecaChips();
+        }));
+      });
+    }
+
+    window.handleTagInput = function(e) {
+      const input = e.target;
+      const val = input.value.trim().replace(/,$/, '');
+      if ((e.key === 'Enter' || e.key === ',') && val) {
+        e.preventDefault();
+        addNewTag(val);
+        input.value = '';
+        document.getElementById('tag-suggestions').innerHTML = '';
+      } else if (e.key === 'Backspace' && !input.value && newPecaTags.length) {
+        newPecaTags.pop();
+        refreshNewPecaChips();
+      }
+    };
+
+    window.commitTagInput = function(input) {
+      const val = input.value.trim().replace(/,$/, '');
+      if (val) { addNewTag(val); input.value = ''; }
+      setTimeout(() => { document.getElementById('tag-suggestions').innerHTML = ''; }, 150);
+    };
+
+    function addNewTag(tag) {
+      const clean = tag.trim();
+      if (clean && !newPecaTags.includes(clean)) {
+        newPecaTags.push(clean);
+        if (!allKnownTags.includes(clean)) allKnownTags.push(clean);
+        refreshNewPecaChips();
+      }
+    }
+
+    window.showTagSuggestions = function(query) {
+      const box = document.getElementById('tag-suggestions');
+      if (!query.trim()) { box.innerHTML = ''; return; }
+      const q = query.toLowerCase();
+      const matches = allKnownTags.filter(t => t.toLowerCase().includes(q) && !newPecaTags.includes(t));
+      if (!matches.length) { box.innerHTML = ''; return; }
+      box.innerHTML = matches.map(t =>
+        `<div class="tag-suggestion-item" onmousedown="addNewTag('${t}');document.getElementById('tag-input-field').value='';document.getElementById('tag-suggestions').innerHTML=''">${t}</div>`
+      ).join('');
+    };
+
+    window.getNewPecaTags = () => [...newPecaTags];
+    window.resetNewPecaTags = () => {
+      newPecaTags = [];
+      refreshNewPecaChips();
+      document.getElementById('tag-input-field').value = '';
+    };
+
+    window.carregarTagsConhecidas = async function() {
+      try {
+        allKnownTags = await window.api.getAllTags();
+        renderTagFilterBar();
+      } catch (_) {}
+    };
+
+    // ── FILTRO POR TAGS ───────────────────────────────────────────────────────
+    let activeTags = new Set();
+
+    function renderTagFilterBar() {
+      const bar = document.getElementById('tag-filter-bar');
+      const chips = document.getElementById('tag-filter-chips');
+      if (!allKnownTags.length) { bar.style.display = 'none'; return; }
+      bar.style.display = 'flex';
+      chips.innerHTML = allKnownTags.map(tag => {
+        const color = tagColor(tag);
+        const active = activeTags.has(tag);
+        return `<button type="button" class="tag-filter-chip ${active ? 'active' : ''}"
+          style="--tc:${color}" onclick="toggleTagFilter('${tag}')">${tag}</button>`;
+      }).join('');
+    }
+
+    window.toggleTagFilter = function(tag) {
+      if (activeTags.has(tag)) activeTags.delete(tag);
+      else activeTags.add(tag);
+      document.getElementById('btn-limpar-tags').style.display = activeTags.size ? '' : 'none';
+      renderTagFilterBar();
+      aplicarFiltros();
+    };
+
+    window.limparFiltroTags = function() {
+      activeTags.clear();
+      document.getElementById('btn-limpar-tags').style.display = 'none';
+      renderTagFilterBar();
+      aplicarFiltros();
+    };
+
+    window.aplicarFiltros = function() {
+      const q = (document.getElementById('search-estoque')?.value || '').toLowerCase();
+      const rows = document.querySelectorAll('#tbody-estoque tr[data-tags]');
+      let visible = 0;
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const rowTags = JSON.parse(row.dataset.tags || '[]');
+        const textMatch = !q || text.includes(q);
+        const tagMatch = !activeTags.size || [...activeTags].every(t => rowTags.includes(t));
+        const show = textMatch && tagMatch;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      const countEl = document.getElementById('count-estoque');
+      if (countEl) countEl.textContent = visible + (visible !== 1 ? ' itens' : ' item');
+    };
+
+    // ── STATS ESTOQUE ─────────────────────────────────────────────────────────
+    window.atualizarStatsEstoque = function(estoque) {
+      const totalPecas = estoque.length;
+      const totalItens = estoque.reduce((s, p) => s + (p.quantidade || 0), 0);
+      const valorTotal = estoque.reduce((s, p) => s + (p.quantidade || 0) * (p.valor || 0), 0);
+
+      const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+      el('stat-total-pecas', totalPecas || '—');
+      el('stat-total-itens', totalItens || '—');
+      el('stat-valor-total', totalPecas
+        ? valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+        : '—');
+
+      const countEl = document.getElementById('count-estoque');
+      if (countEl) countEl.textContent = totalPecas + (totalPecas !== 1 ? ' itens' : ' item');
+
+      const allTags = [...new Set(estoque.flatMap(p => p.tags || []))].sort();
+      allKnownTags = [...new Set([...allKnownTags, ...allTags])];
+      renderTagFilterBar();
+    };
+  </script>
+</body>
+</html>
